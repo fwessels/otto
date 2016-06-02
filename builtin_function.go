@@ -2,7 +2,6 @@ package otto
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 	"unicode"
 
@@ -29,8 +28,6 @@ func argumentList2parameterList(argumentList []Value) []string {
 	}
 	return parameterList
 }
-
-var matchIdentifier = regexp.MustCompile(`^[$_\p{L}][$_\p{L}\d}]*$`)
 
 func builtinNewFunctionNative(runtime *_runtime, argumentList []Value) *_object {
 	var parameterList, body string
