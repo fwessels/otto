@@ -1,15 +1,12 @@
 package otto
 
 import (
-	"fmt"
-	"regexp"
+	"github.com/dlclark/regexp2"
 	"unicode/utf8"
-
-	"github.com/robertkrimen/otto/parser"
 )
 
-type _regExpObject struct {
-	regularExpression *regexp.Regexp
+type _regExp2Object struct {
+	regularExpression *regexp2.Regexp
 	global            bool
 	ignoreCase        bool
 	multiline         bool
@@ -17,53 +14,22 @@ type _regExpObject struct {
 	flags             string
 }
 
-func (runtime *_runtime) newRegExpObject(pattern string, flags string) *_object {
+func (runtime *_runtime) newRegExp2Object(pattern string, flags string) *_object {
 	self := runtime.newObject()
 	self.class = "RegExp"
 
 	global := false
 	ignoreCase := false
 	multiline := false
-	re2flags := ""
 
-	// TODO Maybe clean up the panicking here... TypeError, SyntaxError, ?
+	// TODO Pass in flags properly
 
-	for _, chr := range flags {
-		switch chr {
-		case 'g':
-			if global {
-				panic(runtime.panicSyntaxError("newRegExpObject: %s %s", pattern, flags))
-			}
-			global = true
-		case 'm':
-			if multiline {
-				panic(runtime.panicSyntaxError("newRegExpObject: %s %s", pattern, flags))
-			}
-			multiline = true
-			re2flags += "m"
-		case 'i':
-			if ignoreCase {
-				panic(runtime.panicSyntaxError("newRegExpObject: %s %s", pattern, flags))
-			}
-			ignoreCase = true
-			re2flags += "i"
-		}
-	}
-
-	re2pattern, err := parser.TransformRegExp(pattern)
+	regularExpression, err := regexp2.Compile(pattern, 0)
 	if err != nil {
-		panic(runtime.panicTypeError("Invalid regular expression: %s", err.Error()))
-	}
-	if len(re2flags) > 0 {
-		re2pattern = fmt.Sprintf("(?%s:%s)", re2flags, re2pattern)
+		panic(runtime.panicSyntaxError("Invalid regular expression 1: %s", err.Error()[22:]))
 	}
 
-	regularExpression, err := regexp.Compile(re2pattern)
-	if err != nil {
-		panic(runtime.panicSyntaxError("Invalid regular expression: %s", err.Error()[22:]))
-	}
-
-	self.value = _regExpObject{
+	self.value = _regExp2Object{
 		regularExpression: regularExpression,
 		global:            global,
 		ignoreCase:        ignoreCase,
@@ -79,8 +45,8 @@ func (runtime *_runtime) newRegExpObject(pattern string, flags string) *_object 
 	return self
 }
 
-func (self *_object) regExpValue() _regExpObject {
-	value, _ := self.value.(_regExpObject)
+func (self *_object) regExpValue() _regExp2Object {
+	value, _ := self.value.(_regExp2Object)
 	return value
 }
 
@@ -96,7 +62,7 @@ func execRegExp(this *_object, target string) (match bool, result []int) {
 	}
 	if 0 > index || index > int64(len(target)) {
 	} else {
-		result = this.regExpValue().regularExpression.FindStringSubmatchIndex(target[index:])
+		result = FindStringSubmatchIndex(this.regExpValue().regularExpression, target[index:])
 	}
 	if result == nil {
 		//this.defineProperty("lastIndex", toValue_(0), 0111, true)

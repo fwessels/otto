@@ -2,7 +2,7 @@ package otto
 
 import (
 	"fmt"
-	"regexp"
+	"github.com/dlclark/regexp2"
 
 	"github.com/robertkrimen/otto/ast"
 	"github.com/robertkrimen/otto/file"
@@ -491,7 +491,7 @@ type (
 	_nodeRegExpLiteral struct {
 		flags   string
 		pattern string // Value?
-		regexp  *regexp.Regexp
+		regexp  *regexp2.Regexp
 	}
 
 	_nodeSequenceExpression struct {

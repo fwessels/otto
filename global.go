@@ -31,7 +31,7 @@ var (
 			value: 0,
 		},
 	}
-	prototypeValueRegExp = _regExpObject{
+	prototypeValueRegExp = _regExp2Object{
 		regularExpression: nil,
 		global:            false,
 		ignoreCase:        false,
@@ -154,7 +154,7 @@ func (runtime *_runtime) newRegExp(patternValue Value, flagsValue Value) *_objec
 }
 
 func (runtime *_runtime) _newRegExp(pattern string, flags string) *_object {
-	self := runtime.newRegExpObject(pattern, flags)
+	self := runtime.newRegExp2Object(pattern, flags)
 	self.prototype = runtime.global.RegExpPrototype
 	return self
 }

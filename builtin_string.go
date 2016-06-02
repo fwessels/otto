@@ -3,6 +3,7 @@ package otto
 import (
 	"bytes"
 	"regexp"
+	"github.com/dlclark/regexp2"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -137,7 +138,7 @@ func builtinString_match(call FunctionCall) Value {
 	}
 
 	{
-		result := matcher.regExpValue().regularExpression.FindAllStringIndex(target, -1)
+		result := FindAllStringIndex(matcher.regExpValue().regularExpression, target, -1)
 		matchCount := len(result)
 		if result == nil {
 			matcher.put("lastIndex", toValue_int(0), true)
@@ -195,7 +196,7 @@ func builtinString_replace(call FunctionCall) Value {
 	searchObject := searchValue._object()
 
 	// TODO If a capture is -1?
-	var search *regexp.Regexp
+	var search *regexp2.Regexp
 	global := false
 	find := 1
 	if searchValue.IsObject() && searchObject.class == "RegExp" {
@@ -205,10 +206,10 @@ func builtinString_replace(call FunctionCall) Value {
 			find = -1
 		}
 	} else {
-		search = regexp.MustCompile(regexp.QuoteMeta(searchValue.string()))
+		search = regexp2.MustCompile(regexp.QuoteMeta(searchValue.string()), 0)
 	}
 
-	found := search.FindAllSubmatchIndex(target, find)
+	found := FindAllSubmatchIndex(search, target, find)
 	if found == nil {
 		return toValue_string(string(target)) // !match
 	}
@@ -270,7 +271,7 @@ func builtinString_search(call FunctionCall) Value {
 	if !searchValue.IsObject() || search.class != "RegExp" {
 		search = call.runtime.newRegExp(searchValue, Value{})
 	}
-	result := search.regExpValue().regularExpression.FindStringIndex(target)
+	result := FindStringIndex(search.regExpValue().regularExpression, target)
 	if result == nil {
 		return toValue_int(-1)
 	}
@@ -311,7 +312,7 @@ func builtinString_split(call FunctionCall) Value {
 		targetLength := len(target)
 		search := separatorValue._object().regExpValue().regularExpression
 		valueArray := []Value{}
-		result := search.FindAllStringSubmatchIndex(target, -1)
+		result := FindAllStringSubmatchIndex(search, target, -1)
 		lastIndex := 0
 		found := 0
 
