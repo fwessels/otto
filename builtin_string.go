@@ -499,3 +499,88 @@ func builtinString_toLocaleLowerCase(call FunctionCall) Value {
 func builtinString_toLocaleUpperCase(call FunctionCall) Value {
 	return builtinString_toUpperCase(call)
 }
+
+func FindStringIndex(re *regexp2.Regexp, s string) []int {
+	m, err := re.FindStringMatch(s)
+	if err == nil && m != nil {
+		return []int{m.GroupByNumber(0).Index, m.GroupByNumber(0).Index + m.GroupByNumber(0).Length}
+	}
+	return nil
+}
+
+func FindAllStringIndex(re *regexp2.Regexp, s string, n int) [][]int {
+	m, err := re.FindStringMatch(s)
+	if err == nil && m != nil {
+		result := make([][]int, 0)
+		for {
+			r := make([]int, 0)
+			for i := 0; i < m.GroupCount(); i++ {
+				r = append(r, []int{m.GroupByNumber(i).Index, m.GroupByNumber(i).Index + m.GroupByNumber(i).Length}...)
+			}
+			result = append(result, r)
+			m, err = re.FindNextMatch(m)
+			if err != nil || m == nil {
+				break
+			}
+			if n != -1 && len(result) >= n {
+				break
+			}
+		}
+		return result
+	}
+	return make([][]int, 0)
+}
+
+func FindStringSubmatchIndex(re *regexp2.Regexp, s string) []int {
+	r := FindAllStringSubmatchIndex(re, s, -1)
+	if len(r) > 0 {
+		return r[0]
+	}
+	return nil
+}
+
+func FindAllStringSubmatchIndex(re *regexp2.Regexp, s string, n int) [][]int {
+	m, err := re.FindStringMatch(s)
+	if err == nil && m != nil {
+		result := make([][]int, 0)
+		for {
+			r := make([]int, 0)
+			for i := 0; i < m.GroupCount(); i++ {
+				r = append(r, []int{m.GroupByNumber(i).Index, m.GroupByNumber(i).Index + m.GroupByNumber(i).Length}...)
+			}
+			result = append(result, r)
+			m, err = re.FindNextMatch(m)
+			if err != nil || m == nil {
+				break
+			}
+			if n != -1 && len(result) >= n {
+				break
+			}
+		}
+		return result
+	}
+	return make([][]int, 0)
+}
+
+func FindAllSubmatchIndex(re *regexp2.Regexp, b []byte, n int) [][]int {
+	m, err := re.FindStringMatch(string(b))
+	if err == nil && m != nil {
+		result := make([][]int, 0)
+		for {
+			r := make([]int, 0)
+			for i := 0; i < m.GroupCount(); i++ {
+				r = append(r, []int{m.GroupByNumber(i).Index, m.GroupByNumber(i).Index + m.GroupByNumber(i).Length}...)
+			}
+			result = append(result, r)
+			m, err = re.FindNextMatch(m)
+			if err != nil || m == nil {
+				break
+			}
+			if n != -1 && len(result) >= n {
+				break
+			}
+		}
+		return result
+	}
+        return make([][]int, 0)
+}
